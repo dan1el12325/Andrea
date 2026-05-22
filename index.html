@@ -10,6 +10,17 @@
   <canvas id="space"></canvas>
   <canvas id="main"></canvas>
 
+  <section class="music-player" aria-label="Reproductor de musica">
+    <audio id="audioPlayer" preload="auto" autoplay></audio>
+    <button class="music-button" id="prevSong" type="button" aria-label="Cancion anterior">&lt;</button>
+    <button class="music-button music-play" id="toggleMusic" type="button" aria-label="Reproducir musica">Play</button>
+    <button class="music-button" id="nextSong" type="button" aria-label="Siguiente cancion">&gt;</button>
+    <div class="music-info">
+      <span class="music-title" id="songTitle">Sin cancion</span>
+      <span class="music-status" id="songStatus">Agrega canciones en /musica</span>
+    </div>
+  </section>
+
   <div class="photo-modal" id="photoModal" aria-hidden="true">
     <button class="modal-close" id="modalClose" type="button" aria-label="Cerrar foto">x</button>
     <img class="modal-photo" id="modalPhoto" alt="">

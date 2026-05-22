@@ -7,6 +7,12 @@ const photoModal = document.getElementById('photoModal');
 const modalPhoto = document.getElementById('modalPhoto');
 const modalCaption = document.getElementById('modalCaption');
 const modalClose = document.getElementById('modalClose');
+const audioPlayer = document.getElementById('audioPlayer');
+const prevSongButton = document.getElementById('prevSong');
+const toggleMusicButton = document.getElementById('toggleMusic');
+const nextSongButton = document.getElementById('nextSong');
+const songTitle = document.getElementById('songTitle');
+const songStatus = document.getElementById('songStatus');
 
 let W, H, cx, cy;
 let heartBeat = 0;
@@ -16,12 +22,22 @@ let galaxyParticles = [];
 let heartParticles = [];
 let orbitTargets = [];
 let birthdayTextStart = null;
+let currentSongIndex = 0;
 
 const BIRTHDAY_LINES = ['Feliz', 'cumplea\u00f1os'];
 const TYPE_SPEED = 130;
 const BIRTHDAY_FONT_FAMILY = 'GreatVibes-Regular';
+const MUSIC_VOLUME = 0.75;
 
 let birthdayFontLoaded = false;
+
+// Pon tus canciones en una carpeta llamada "musica" junto a estos archivos.
+// Puedes usar mp3, ogg o wav, por ejemplo: { name: 'Nuestra cancion', url: 'musica/cancion.mp3' }
+const SONGS = [
+  { name: 'Feliz cumpleaños', url: 'musica/01.mp3' },
+  { name: 'Colgado en tus manos', url: 'musica/02.mp3' },
+  { name: 'LQRA Session #5', url: 'musica/03.mp3' }
+];
 
 // Pon tus imagenes en una carpeta llamada "fotos" junto a estos archivos.
 // Luego cambia o duplica estas lineas: { name: 'Mi foto', url: 'fotos/mi-foto.jpg' }
@@ -108,6 +124,107 @@ function loadImages() {
 function markImageLoaded() {
   loadedCount++;
   imagesLoaded = loadedCount >= PHOTOS.length;
+}
+
+function hasSongs() {
+  return SONGS.length > 0;
+}
+
+function setSongStatus(text) {
+  songStatus.textContent = text;
+}
+
+function updateMusicButtons() {
+  const disabled = !hasSongs();
+  prevSongButton.disabled = disabled;
+  toggleMusicButton.disabled = disabled;
+  nextSongButton.disabled = disabled;
+}
+
+function loadCurrentSong() {
+  updateMusicButtons();
+
+  if (!hasSongs()) {
+    audioPlayer.removeAttribute('src');
+    songTitle.textContent = 'Sin cancion';
+    setSongStatus('Agrega canciones en /musica');
+    toggleMusicButton.textContent = 'Play';
+    return;
+  }
+
+  const song = SONGS[currentSongIndex];
+  audioPlayer.src = song.url;
+  audioPlayer.volume = MUSIC_VOLUME;
+  songTitle.textContent = song.name;
+  setSongStatus('Lista para reproducir');
+  toggleMusicButton.textContent = 'Play';
+}
+
+async function playCurrentSong() {
+  if (!hasSongs()) return;
+
+  try {
+    await audioPlayer.play();
+    toggleMusicButton.textContent = 'Pause';
+    setSongStatus('Reproduciendo');
+  } catch (error) {
+    setSongStatus('Autoplay bloqueado: toca la pagina');
+    console.warn('No se pudo reproducir la cancion.', error);
+  }
+}
+
+function pauseCurrentSong() {
+  audioPlayer.pause();
+  toggleMusicButton.textContent = 'Play';
+  setSongStatus('Pausada');
+}
+
+function changeSong(direction, shouldPlay) {
+  if (!hasSongs()) return;
+
+  currentSongIndex = (currentSongIndex + direction + SONGS.length) % SONGS.length;
+  loadCurrentSong();
+
+  if (shouldPlay) {
+    playCurrentSong();
+  }
+}
+
+function setupMusicPlayer() {
+  loadCurrentSong();
+
+  toggleMusicButton.addEventListener('click', () => {
+    if (audioPlayer.paused) {
+      playCurrentSong();
+    } else {
+      pauseCurrentSong();
+    }
+  });
+
+  prevSongButton.addEventListener('click', () => {
+    changeSong(-1, !audioPlayer.paused);
+  });
+
+  nextSongButton.addEventListener('click', () => {
+    changeSong(1, !audioPlayer.paused);
+  });
+
+  audioPlayer.addEventListener('ended', () => {
+    changeSong(1, true);
+  });
+
+  audioPlayer.addEventListener('error', () => {
+    setSongStatus('No se encontro el archivo de audio');
+    toggleMusicButton.textContent = 'Play';
+  });
+
+  playCurrentSong();
+
+  window.addEventListener('pointerdown', () => {
+    if (audioPlayer.paused) {
+      playCurrentSong();
+    }
+  }, { once: true });
 }
 
 async function loadBirthdayFont() {
@@ -547,6 +664,7 @@ window.addEventListener('keydown', (event) => {
 
 async function start() {
   loadImages();
+  setupMusicPlayer();
   await loadBirthdayFont();
   window.addEventListener('resize', resize);
   resize();

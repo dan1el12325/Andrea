@@ -36,6 +36,68 @@ canvas {
   z-index: 1;
 }
 
+.music-player {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: 38px 64px 38px minmax(120px, 260px);
+  align-items: center;
+  gap: 8px;
+  width: min(92vw, 456px);
+  padding: 10px;
+  border: 1px solid rgba(255, 210, 230, 0.42);
+  border-radius: 8px;
+  background: rgba(10, 5, 14, 0.72);
+  box-shadow: 0 0 24px rgba(255, 92, 160, 0.24);
+  transform: translateX(-50%);
+  backdrop-filter: blur(8px);
+}
+
+.music-button {
+  height: 38px;
+  border: 1px solid rgba(255, 210, 230, 0.58);
+  border-radius: 8px;
+  color: #fff;
+  background: rgba(255, 82, 150, 0.2);
+  font: 700 13px/1 Arial, sans-serif;
+  cursor: pointer;
+}
+
+.music-button:hover {
+  background: rgba(255, 82, 150, 0.45);
+}
+
+.music-button:disabled {
+  cursor: default;
+  opacity: 0.42;
+}
+
+.music-play {
+  min-width: 64px;
+}
+
+.music-info {
+  min-width: 0;
+  color: #fff4fb;
+  font: 600 13px/1.25 Arial, sans-serif;
+}
+
+.music-title,
+.music-status {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.music-status {
+  margin-top: 2px;
+  color: rgba(255, 232, 242, 0.72);
+  font-size: 11px;
+}
+
 .photo-modal {
   position: fixed;
   inset: 0;
@@ -90,4 +152,11 @@ canvas {
 
 .modal-close:hover {
   background: rgba(255, 78, 146, 0.78);
+}
+
+@media (max-width: 560px) {
+  .music-player {
+    grid-template-columns: 34px 58px 34px 1fr;
+    bottom: 12px;
+  }
 }
