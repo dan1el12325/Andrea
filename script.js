@@ -15,31 +15,38 @@ let stars = [];
 let galaxyParticles = [];
 let heartParticles = [];
 let orbitTargets = [];
+let birthdayTextStart = null;
+
+const BIRTHDAY_LINES = ['Feliz', 'cumplea\u00f1os'];
+const TYPE_SPEED = 130;
+const BIRTHDAY_FONT_FAMILY = 'GreatVibes-Regular';
+
+let birthdayFontLoaded = false;
 
 // Pon tus imagenes en una carpeta llamada "fotos" junto a estos archivos.
 // Luego cambia o duplica estas lineas: { name: 'Mi foto', url: 'fotos/mi-foto.jpg' }
 const PHOTOS = [
   { name: 'Una de las tantas veces que te acompañaba al mexi por primera vez', url: 'fotos/01.jpeg' },
-  { name: 'Foto 02', url: 'fotos/02.jpeg' },
-  { name: 'Foto 03', url: 'fotos/03.jpeg' },
-  { name: 'Foto 04', url: 'fotos/04.jpeg' },
-  { name: 'Foto 05', url: 'fotos/05.jpeg' },
-  { name: 'Foto 06', url: 'fotos/06.jpeg' },
-  { name: 'Foto 07', url: 'fotos/07.jpeg' },
-  { name: 'Foto 08', url: 'fotos/08.jpeg' },
-  { name: 'Foto 09', url: 'fotos/09.jpeg' },
-  { name: 'Foto 10', url: 'fotos/10.jpeg' },
-  { name: 'Foto 11', url: 'fotos/11.jpeg' },
-  { name: 'Foto 12', url: 'fotos/12.jpeg' },
-  { name: 'Foto 13', url: 'fotos/13.jpeg' },
-  { name: 'Foto 14', url: 'fotos/14.jpeg' },
-  { name: 'Foto 15', url: 'fotos/15.jpeg' },
-  { name: 'Foto 16', url: 'fotos/16.jpeg' },
-  { name: 'Foto 17', url: 'fotos/17.jpeg' },
-  { name: 'Foto 18', url: 'fotos/18.jpeg' },
-  { name: 'Foto 18', url: 'fotos/19.jpeg' },
-  { name: 'Foto 18', url: 'fotos/20.jpeg' },
-  { name: 'Foto 18', url: 'fotos/21.jpeg' },
+  { name: 'Colgando en tus manos', url: 'fotos/02.jpeg' },
+  { name: 'Estuvo muy bien ese día', url: 'fotos/03.jpeg' },
+  { name: 'JAJAJA y esa wuera', url: 'fotos/04.jpeg' },
+  { name: 'Así de enojana eres JAJAJ', url: 'fotos/05.jpeg' },
+  { name: 'Yo se que tu abuela estaria orgullosa de la mujer que eres ahora', url: 'fotos/06.jpeg' },
+  { name: 'Que bonitos ojos tienes', url: 'fotos/07.jpeg' },
+  { name: 'Te ves muy linda en esas fotos', url: 'fotos/08.jpeg' },
+  { name: 'Habia mas romance con Dayanna jaja', url: 'fotos/09.jpeg' },
+  { name: 'Se  podia leer la carta de bebidas antes', url: 'fotos/10.jpeg' },
+  { name: 'Me gusto mucho ese dia', url: 'fotos/11.jpeg' },
+  { name: 'Debeerias dedicarte a tatuar jaja', url: 'fotos/12.jpeg' },
+  { name: 'Les incomodabamos a los de tu salon', url: 'fotos/13.jpeg' },
+  { name: 'Te quedan muy bien los gorros', url: 'fotos/14.jpeg' },
+  { name: 'Las fotos mas descentes que supe tomar en 3 años jaja', url: 'fotos/15.jpeg' },
+  { name: 'Todo lo que paso ese dia en el deportivo me gusto', url: 'fotos/16.jpeg' },
+  { name: 'y esos labiesote??', url: 'fotos/17.jpeg' },
+  { name: 'Me gusta mucho tu cabello lacio', url: 'fotos/18.jpeg' },
+  { name: 'Esas fotos estan increibles', url: 'fotos/19.jpeg' },
+  { name: 'Pizza?', url: 'fotos/20.jpeg' },
+  { name: 'Feliz navidad', url: 'fotos/21.jpeg' },
 ];
 
 let imagesLoaded = false;
@@ -101,6 +108,28 @@ function loadImages() {
 function markImageLoaded() {
   loadedCount++;
   imagesLoaded = loadedCount >= PHOTOS.length;
+}
+
+async function loadBirthdayFont() {
+  if (!document.fonts || !document.fonts.load) {
+    birthdayFontLoaded = true;
+    return;
+  }
+
+  const fontQuery = `italic 700 64px "${BIRTHDAY_FONT_FAMILY}"`;
+
+  try {
+    const loadedFonts = await document.fonts.load(fontQuery);
+    await document.fonts.ready;
+    birthdayFontLoaded = loadedFonts.length > 0;
+
+    if (!birthdayFontLoaded) {
+      console.warn(`No se pudo cargar la fuente "${BIRTHDAY_FONT_FAMILY}". Revisa la ruta en style.css.`);
+    }
+  } catch (error) {
+    birthdayFontLoaded = false;
+    console.warn(`Error cargando la fuente "${BIRTHDAY_FONT_FAMILY}".`, error);
+  }
 }
 
 function resize() {
@@ -276,6 +305,67 @@ function drawHeart(beat) {
   });
 }
 
+function getTypedLines(visibleCount) {
+  const lines = [];
+  let remaining = visibleCount;
+
+  for (const line of BIRTHDAY_LINES) {
+    const take = Math.max(0, Math.min(line.length, remaining));
+    lines.push(line.slice(0, take));
+    remaining -= line.length;
+  }
+
+  return lines;
+}
+
+function drawBirthdayText(ts, beat) {
+  if (!birthdayFontLoaded) return;
+  if (birthdayTextStart === null) birthdayTextStart = ts;
+
+  const totalLetters = BIRTHDAY_LINES.reduce((sum, line) => sum + line.length, 0);
+  const elapsed = ts - birthdayTextStart;
+  const visibleCount = Math.min(totalLetters, Math.floor(elapsed / TYPE_SPEED));
+  const typedLines = getTypedLines(visibleCount);
+  const minSide = Math.min(W, H);
+  const heartCY = cy - 17 * minSide * 0.025;
+  const fontSize = Math.max(28, Math.min(68, minSide * 0.075));
+  const lineHeight = fontSize * 0.9;
+  const textY = heartCY + minSide * 0.035;
+  const pulse = 1 + Math.sin(beat) * 0.025;
+  const showCursor = visibleCount < totalLetters && Math.floor(ts / 360) % 2 === 0;
+
+  ctx.save();
+  ctx.translate(cx, textY);
+  ctx.scale(pulse, pulse);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = `italic 700 ${fontSize}px "${BIRTHDAY_FONT_FAMILY}"`;
+  ctx.fillStyle = '#fff4fb';
+  ctx.shadowBlur = 18;
+  ctx.shadowColor = 'rgba(255, 70, 155, 0.95)';
+
+  typedLines.forEach((line, index) => {
+    const y = (index - (BIRTHDAY_LINES.length - 1) / 2) * lineHeight;
+    ctx.fillText(line, 0, y);
+  });
+
+  if (showCursor) {
+    const activeLineIndex = typedLines[1].length > 0 ? 1 : 0;
+    const activeLine = typedLines[activeLineIndex];
+    const y = (activeLineIndex - (BIRTHDAY_LINES.length - 1) / 2) * lineHeight;
+    const cursorX = ctx.measureText(activeLine).width / 2 + fontSize * 0.12;
+
+    ctx.beginPath();
+    ctx.moveTo(cursorX, y - fontSize * 0.38);
+    ctx.lineTo(cursorX, y + fontSize * 0.34);
+    ctx.lineWidth = Math.max(2, fontSize * 0.045);
+    ctx.strokeStyle = '#ffffff';
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
 function roundedRect(x, y, width, height, radius) {
   const r = Math.min(radius, width / 2, height / 2);
   ctx.beginPath();
@@ -429,6 +519,7 @@ function animate(ts) {
   drawGalaxyGlow();
   drawGalaxy();
   drawHeart(heartBeat);
+  drawBirthdayText(ts, heartBeat);
   drawPhotos(orbitAngle);
 }
 
@@ -454,7 +545,12 @@ window.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') closePhoto();
 });
 
-loadImages();
-window.addEventListener('resize', resize);
-resize();
-requestAnimationFrame(animate);
+async function start() {
+  loadImages();
+  await loadBirthdayFont();
+  window.addEventListener('resize', resize);
+  resize();
+  requestAnimationFrame(animate);
+}
+
+start();

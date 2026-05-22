@@ -1,3 +1,12 @@
+@font-face {
+  font-family: "GreatVibes-Regular";
+  src:
+    url("fonts/GreatVibes-Regular.ttf") format("truetype");
+  font-style: italic;
+  font-weight: 700;
+  font-display: block;
+}
+
 *, *::before, *::after {
   margin: 0;
   padding: 0;
